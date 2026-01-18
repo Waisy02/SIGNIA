@@ -1,0 +1,252 @@
+{
+  "version": "v1",
+  "kind": "dataset",
+  "meta": {
+    "name": "example-dataset",
+    "description": "Example SIGNIA schema for a dataset package with tables, files, and columns.",
+    "labels": {
+      "format": "parquet",
+      "domain": "analytics"
+    },
+    "createdAt": "1970-01-01T00:00:00Z",
+    "source": {
+      "type": "archive",
+      "locator": "artifact:/datasets/example-dataset.zip",
+      "contentHash": "2222222222222222222222222222222222222222222222222222222222222222"
+    },
+    "normalization": {
+      "policyVersion": "v1",
+      "pathRoot": "artifact:/",
+      "newline": "lf",
+      "encoding": "utf-8",
+      "symlinks": "deny",
+      "network": "deny"
+    }
+  },
+  "entities": [
+    {
+      "id": "ent:dataset:root",
+      "type": "dataset",
+      "name": "example-dataset",
+      "attrs": {
+        "license": "CC-BY-4.0",
+        "version": "2026-01-01",
+        "description": "A toy dataset for demonstrating structure compilation.",
+        "files": [
+          "artifact:/data/events.parquet",
+          "artifact:/data/users.parquet"
+        ]
+      }
+    },
+    {
+      "id": "ent:file:data/events.parquet",
+      "type": "file",
+      "name": "events.parquet",
+      "attrs": {
+        "path": "artifact:/data/events.parquet",
+        "mime": "application/octet-stream",
+        "format": "parquet"
+      },
+      "digests": [
+        {
+          "alg": "sha256",
+          "hex": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+        }
+      ]
+    },
+    {
+      "id": "ent:file:data/users.parquet",
+      "type": "file",
+      "name": "users.parquet",
+      "attrs": {
+        "path": "artifact:/data/users.parquet",
+        "mime": "application/octet-stream",
+        "format": "parquet"
+      },
+      "digests": [
+        {
+          "alg": "sha256",
+          "hex": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+        }
+      ]
+    },
+    {
+      "id": "ent:table:events",
+      "type": "table",
+      "name": "events",
+      "attrs": {
+        "primaryKey": [
+          "event_id"
+        ],
+        "partitioning": [
+          "day"
+        ],
+        "rowCountApprox": 1000000
+      }
+    },
+    {
+      "id": "ent:col:events.event_id",
+      "type": "column",
+      "name": "event_id",
+      "attrs": {
+        "table": "events",
+        "type": "string",
+        "nullable": false
+      }
+    },
+    {
+      "id": "ent:col:events.user_id",
+      "type": "column",
+      "name": "user_id",
+      "attrs": {
+        "table": "events",
+        "type": "string",
+        "nullable": false
+      }
+    },
+    {
+      "id": "ent:col:events.ts",
+      "type": "column",
+      "name": "ts",
+      "attrs": {
+        "table": "events",
+        "type": "timestamp",
+        "nullable": false
+      }
+    },
+    {
+      "id": "ent:col:events.day",
+      "type": "column",
+      "name": "day",
+      "attrs": {
+        "table": "events",
+        "type": "date",
+        "nullable": false
+      }
+    },
+    {
+      "id": "ent:table:users",
+      "type": "table",
+      "name": "users",
+      "attrs": {
+        "primaryKey": [
+          "user_id"
+        ],
+        "rowCountApprox": 50000
+      }
+    },
+    {
+      "id": "ent:col:users.user_id",
+      "type": "column",
+      "name": "user_id",
+      "attrs": {
+        "table": "users",
+        "type": "string",
+        "nullable": false
+      }
+    },
+    {
+      "id": "ent:col:users.created_at",
+      "type": "column",
+      "name": "created_at",
+      "attrs": {
+        "table": "users",
+        "type": "timestamp",
+        "nullable": false
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge:contains:dataset:eventsfile",
+      "type": "contains",
+      "from": "ent:dataset:root",
+      "to": "ent:file:data/events.parquet",
+      "attrs": {}
+    },
+    {
+      "id": "edge:contains:dataset:usersfile",
+      "type": "contains",
+      "from": "ent:dataset:root",
+      "to": "ent:file:data/users.parquet",
+      "attrs": {}
+    },
+    {
+      "id": "edge:materializes:events",
+      "type": "materializes",
+      "from": "ent:file:data/events.parquet",
+      "to": "ent:table:events",
+      "attrs": {}
+    },
+    {
+      "id": "edge:materializes:users",
+      "type": "materializes",
+      "from": "ent:file:data/users.parquet",
+      "to": "ent:table:users",
+      "attrs": {}
+    },
+    {
+      "id": "edge:has_column:events.event_id",
+      "type": "has_column",
+      "from": "ent:table:events",
+      "to": "ent:col:events.event_id",
+      "attrs": {
+        "ordinal": 1
+      }
+    },
+    {
+      "id": "edge:has_column:events.user_id",
+      "type": "has_column",
+      "from": "ent:table:events",
+      "to": "ent:col:events.user_id",
+      "attrs": {
+        "ordinal": 2
+      }
+    },
+    {
+      "id": "edge:has_column:events.ts",
+      "type": "has_column",
+      "from": "ent:table:events",
+      "to": "ent:col:events.ts",
+      "attrs": {
+        "ordinal": 3
+      }
+    },
+    {
+      "id": "edge:has_column:events.day",
+      "type": "has_column",
+      "from": "ent:table:events",
+      "to": "ent:col:events.day",
+      "attrs": {
+        "ordinal": 4
+      }
+    },
+    {
+      "id": "edge:has_column:users.user_id",
+      "type": "has_column",
+      "from": "ent:table:users",
+      "to": "ent:col:users.user_id",
+      "attrs": {
+        "ordinal": 1
+      }
+    },
+    {
+      "id": "edge:has_column:users.created_at",
+      "type": "has_column",
+      "from": "ent:table:users",
+      "to": "ent:col:users.created_at",
+      "attrs": {
+        "ordinal": 2
+      }
+    },
+    {
+      "id": "edge:foreign_key:events.user_id->users.user_id",
+      "type": "foreign_key",
+      "from": "ent:col:events.user_id",
+      "to": "ent:col:users.user_id",
+      "attrs": {
+        "relationship": "many_to_one"
+      }
+    }
+  ]
+}
