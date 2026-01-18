@@ -1,0 +1,125 @@
+{
+  "version": "v1",
+  "kind": "repo",
+  "meta": {
+    "name": "example-repo",
+    "description": "Example SIGNIA schema for a small repository snapshot.",
+    "labels": {
+      "language": "typescript",
+      "framework": "vite"
+    },
+    "createdAt": "1970-01-01T00:00:00Z",
+    "source": {
+      "type": "path",
+      "locator": "artifact:/example-repo",
+      "contentHash": "0000000000000000000000000000000000000000000000000000000000000000"
+    },
+    "normalization": {
+      "policyVersion": "v1",
+      "pathRoot": "artifact:/",
+      "newline": "lf",
+      "encoding": "utf-8",
+      "symlinks": "deny",
+      "network": "deny"
+    }
+  },
+  "entities": [
+    {
+      "id": "ent:repo:root",
+      "type": "repo",
+      "name": "example-repo",
+      "attrs": {
+        "path": "artifact:/",
+        "vcs": "git",
+        "branch": "main"
+      }
+    },
+    {
+      "id": "ent:dir:src",
+      "type": "dir",
+      "name": "src",
+      "attrs": {
+        "path": "artifact:/src"
+      }
+    },
+    {
+      "id": "ent:file:src/main.ts",
+      "type": "file",
+      "name": "main.ts",
+      "attrs": {
+        "path": "artifact:/src/main.ts",
+        "mime": "text/typescript",
+        "role": "entrypoint"
+      },
+      "digests": [
+        {
+          "alg": "sha256",
+          "hex": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        }
+      ]
+    },
+    {
+      "id": "ent:file:package.json",
+      "type": "file",
+      "name": "package.json",
+      "attrs": {
+        "path": "artifact:/package.json",
+        "mime": "application/json",
+        "role": "manifest"
+      },
+      "digests": [
+        {
+          "alg": "sha256",
+          "hex": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+        }
+      ]
+    },
+    {
+      "id": "ent:module:src/main.ts",
+      "type": "module",
+      "name": "src/main.ts",
+      "attrs": {
+        "path": "artifact:/src/main.ts",
+        "exports": [
+          "default"
+        ],
+        "imports": [
+          "react",
+          "react-dom/client"
+        ]
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge:contains:root:src",
+      "type": "contains",
+      "from": "ent:repo:root",
+      "to": "ent:dir:src",
+      "attrs": {}
+    },
+    {
+      "id": "edge:contains:root:package.json",
+      "type": "contains",
+      "from": "ent:repo:root",
+      "to": "ent:file:package.json",
+      "attrs": {}
+    },
+    {
+      "id": "edge:contains:src:main.ts",
+      "type": "contains",
+      "from": "ent:dir:src",
+      "to": "ent:file:src/main.ts",
+      "attrs": {}
+    },
+    {
+      "id": "edge:defines:module:file",
+      "type": "defines",
+      "from": "ent:file:src/main.ts",
+      "to": "ent:module:src/main.ts",
+      "attrs": {
+        "kind": "module_from_file"
+      }
+    }
+  ]
+}
