@@ -1,0 +1,243 @@
+name: CI
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: 1
+  # Keep tool versions explicit for reproducibility
+  NODE_VERSION: "20"
+  PNPM_VERSION: "9"
+  # If you later add a pinned Rust toolchain in rust-toolchain.toml, actions-rs will respect it.
+
+jobs:
+  meta:
+    name: Meta checks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate YAML files
+        uses: ibiqlik/action-yamllint@v3
+        with:
+          file_or_dir: ".github"
+          config_data: |
+            extends: default
+            rules:
+              line-length:
+                max: 140
+                level: warning
+              truthy: disable
+
+  rust:
+    name: Rust (fmt, clippy, test, build)
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        crate:
+          - crates/signia-core
+          - crates/signia-plugins
+          - crates/signia-store
+          - crates/signia-api
+          - crates/signia-cli
+          - crates/signia-solana-client
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      - name: Cache cargo registry + build
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: |
+            ${{ matrix.crate }} -> target
+          cache-on-failure: true
+
+      - name: Rustfmt (check)
+        working-directory: ${{ matrix.crate }}
+        run: cargo fmt --all --check
+
+      - name: Clippy (deny warnings)
+        working-directory: ${{ matrix.crate }}
+        run: cargo clippy --all-targets --all-features -- -D warnings
+
+      - name: Tests
+        working-directory: ${{ matrix.crate }}
+        run: cargo test --all-features --locked
+
+      - name: Build (release)
+        working-directory: ${{ matrix.crate }}
+        run: cargo build --release --locked
+
+      - name: Upload build artifacts (CLI only)
+        if: ${{ matrix.crate == 'crates/signia-cli' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: signia-cli-linux
+          path: |
+            ${{ matrix.crate }}/target/release/signia
+          if-no-files-found: warn
+
+  rust-workspace:
+    name: Rust workspace-level checks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      - name: Cache cargo registry + build
+        uses: Swatinem/rust-cache@v2
+        with:
+          cache-on-failure: true
+
+      - name: Cargo deny (supply chain policy)
+        run: |
+          if [ -f deny.toml ]; then
+            cargo install cargo-deny --locked
+            cargo deny check
+          else
+            echo "deny.toml not found; skipping cargo-deny."
+          fi
+
+      - name: Cargo audit (vulnerabilities)
+        run: |
+          if [ -f audit.toml ]; then
+            cargo install cargo-audit --locked
+            cargo audit
+          else
+            echo "audit.toml not found; skipping cargo-audit."
+          fi
+
+  node:
+    name: Node (lint, test, build)
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        project:
+          - .
+          - console/web
+          - console/interface
+          - sdk/ts
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "pnpm"
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Install dependencies
+        working-directory: ${{ matrix.project }}
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        working-directory: ${{ matrix.project }}
+        run: |
+          if pnpm -s run | grep -q "^lint"; then
+            pnpm run lint
+          else
+            echo "No lint script found; skipping."
+          fi
+
+      - name: Test
+        working-directory: ${{ matrix.project }}
+        run: |
+          if pnpm -s run | grep -q "^test"; then
+            pnpm run test
+          else
+            echo "No test script found; skipping."
+          fi
+
+      - name: Build
+        working-directory: ${{ matrix.project }}
+        run: |
+          if pnpm -s run | grep -q "^build"; then
+            pnpm run build
+          else
+            echo "No build script found; skipping."
+          fi
+
+  anchor:
+    name: Solana program (Anchor build/test)
+    runs-on: ubuntu-latest
+    # This job is optional and will run only when the program directory exists.
+    if: ${{ hashFiles('programs/signia-registry/Anchor.toml') != '' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y pkg-config build-essential libssl-dev
+
+      - name: Install Solana CLI (stable)
+        run: |
+          sh -c "$(curl -sSfL https://release.solana.com/stable/install)"
+          echo "$HOME/.local/share/solana/install/active_release/bin" >> $GITHUB_PATH
+          solana --version
+
+      - name: Install Anchor
+        run: |
+          cargo install --git https://github.com/coral-xyz/anchor avm --locked
+          avm install latest
+          avm use latest
+          anchor --version
+
+      - name: Cache cargo registry + build
+        uses: Swatinem/rust-cache@v2
+        with:
+          cache-on-failure: true
+
+      - name: Anchor build
+        working-directory: programs/signia-registry
+        run: anchor build
+
+      - name: Anchor test (local validator)
+        working-directory: programs/signia-registry
+        run: anchor test
+
+  summary:
+    name: CI Summary
+    runs-on: ubuntu-latest
+    needs: [meta, rust, rust-workspace, node, anchor]
+    if: always()
+    steps:
+      - name: Print job results
+        run: |
+          echo "meta: ${{ needs.meta.result }}"
+          echo "rust: ${{ needs.rust.result }}"
+          echo "rust-workspace: ${{ needs.rust-workspace.result }}"
+          echo "node: ${{ needs.node.result }}"
+          echo "anchor: ${{ needs.anchor.result }}"
