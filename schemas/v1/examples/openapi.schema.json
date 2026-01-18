@@ -1,0 +1,162 @@
+{
+  "version": "v1",
+  "kind": "openapi",
+  "meta": {
+    "name": "petstore-openapi",
+    "description": "Example SIGNIA schema for an OpenAPI v3 document (Petstore-like).",
+    "labels": {
+      "spec": "openapi",
+      "specVersion": "3.0.3"
+    },
+    "createdAt": "1970-01-01T00:00:00Z",
+    "source": {
+      "type": "file",
+      "locator": "artifact:/specs/petstore.yaml",
+      "contentHash": "1111111111111111111111111111111111111111111111111111111111111111"
+    },
+    "normalization": {
+      "policyVersion": "v1",
+      "pathRoot": "artifact:/",
+      "newline": "lf",
+      "encoding": "utf-8",
+      "symlinks": "deny",
+      "network": "deny"
+    }
+  },
+  "entities": [
+    {
+      "id": "ent:openapi:doc",
+      "type": "openapi_document",
+      "name": "petstore",
+      "attrs": {
+        "openapi": "3.0.3",
+        "title": "Petstore API",
+        "version": "1.0.0"
+      }
+    },
+    {
+      "id": "ent:server:0",
+      "type": "server",
+      "name": "default",
+      "attrs": {
+        "url": "https://api.example.com"
+      }
+    },
+    {
+      "id": "ent:path:/pets",
+      "type": "path",
+      "name": "/pets",
+      "attrs": {
+        "path": "/pets"
+      }
+    },
+    {
+      "id": "ent:op:get:/pets",
+      "type": "operation",
+      "name": "GET /pets",
+      "attrs": {
+        "method": "get",
+        "path": "/pets",
+        "operationId": "listPets",
+        "deprecated": false,
+        "tags": [
+          "pets"
+        ]
+      }
+    },
+    {
+      "id": "ent:op:post:/pets",
+      "type": "operation",
+      "name": "POST /pets",
+      "attrs": {
+        "method": "post",
+        "path": "/pets",
+        "operationId": "createPet",
+        "deprecated": false,
+        "tags": [
+          "pets"
+        ]
+      }
+    },
+    {
+      "id": "ent:schema:Pet",
+      "type": "schema",
+      "name": "Pet",
+      "attrs": {
+        "namespace": "components/schemas",
+        "type": "object",
+        "required": [
+          "id",
+          "name"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "name": {
+            "type": "string"
+          },
+          "tag": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    {
+      "id": "ent:resp:get:/pets:200",
+      "type": "response",
+      "name": "200 response",
+      "attrs": {
+        "status": "200",
+        "contentType": "application/json"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge:has_server:doc:0",
+      "type": "has_server",
+      "from": "ent:openapi:doc",
+      "to": "ent:server:0",
+      "attrs": {}
+    },
+    {
+      "id": "edge:has_path:doc:/pets",
+      "type": "has_path",
+      "from": "ent:openapi:doc",
+      "to": "ent:path:/pets",
+      "attrs": {}
+    },
+    {
+      "id": "edge:has_operation:path:/pets:get",
+      "type": "has_operation",
+      "from": "ent:path:/pets",
+      "to": "ent:op:get:/pets",
+      "attrs": {}
+    },
+    {
+      "id": "edge:has_operation:path:/pets:post",
+      "type": "has_operation",
+      "from": "ent:path:/pets",
+      "to": "ent:op:post:/pets",
+      "attrs": {}
+    },
+    {
+      "id": "edge:response_of:get:/pets:200",
+      "type": "response_of",
+      "from": "ent:resp:get:/pets:200",
+      "to": "ent:op:get:/pets",
+      "attrs": {}
+    },
+    {
+      "id": "edge:uses_schema:response:get:/pets:200:Pet",
+      "type": "uses_schema",
+      "from": "ent:resp:get:/pets:200",
+      "to": "ent:schema:Pet",
+      "attrs": {
+        "as": "items"
+      }
+    }
+  ]
+}
