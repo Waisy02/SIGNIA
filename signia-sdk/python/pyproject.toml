@@ -1,0 +1,5 @@
+
+[project]
+name = "signia"
+version = "0.1.0"
+dependencies = ["requests"]
