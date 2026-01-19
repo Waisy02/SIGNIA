@@ -1,0 +1,11 @@
+{
+  "version": "v1",
+  "kind": "openapi",
+  "nodes": [
+    {
+      "id": "api:/pets:get",
+      "kind": "op"
+    }
+  ],
+  "edges": []
+}

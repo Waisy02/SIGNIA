@@ -1,0 +1,22 @@
+{
+  "version": "v1",
+  "kind": "dataset",
+  "nodes": [
+    {
+      "id": "col:id",
+      "kind": "column",
+      "type": "int"
+    },
+    {
+      "id": "col:name",
+      "kind": "column",
+      "type": "string"
+    },
+    {
+      "id": "col:score",
+      "kind": "column",
+      "type": "int"
+    }
+  ],
+  "edges": []
+}

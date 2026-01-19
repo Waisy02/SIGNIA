@@ -1,0 +1,6 @@
+{
+  "schemaHash": "example_dataset_schema_hash",
+  "artifactHashes": [
+    "example_dataset_content_hash"
+  ]
+}

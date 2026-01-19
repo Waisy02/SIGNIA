@@ -1,0 +1,6 @@
+{
+  "root": "example_openapi_root",
+  "leaves": [
+    "example_openapi_schema_hash"
+  ]
+}

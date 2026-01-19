@@ -1,0 +1,7 @@
+{
+  "root": "example_dataset_root",
+  "leaves": [
+    "example_dataset_schema_hash",
+    "example_dataset_content_hash"
+  ]
+}

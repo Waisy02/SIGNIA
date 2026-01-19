@@ -1,0 +1,30 @@
+{
+  "version": "v1",
+  "kind": "workflow",
+  "nodes": [
+    {
+      "id": "step:fetch",
+      "kind": "step"
+    },
+    {
+      "id": "step:transform",
+      "kind": "step"
+    },
+    {
+      "id": "step:publish",
+      "kind": "step"
+    }
+  ],
+  "edges": [
+    {
+      "from": "step:fetch",
+      "to": "step:transform",
+      "kind": "next"
+    },
+    {
+      "from": "step:transform",
+      "to": "step:publish",
+      "kind": "next"
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+version: 1
+name: sample-pipeline
+steps:
+  - id: fetch
+    kind: http_get
+    with:
+      url: https://example.com/data.json
+  - id: transform
+    kind: json_transform
+    with:
+      jq: ".items | map({id, value})"
+  - id: publish
+    kind: signia_publish
+    with:
+      target: registry

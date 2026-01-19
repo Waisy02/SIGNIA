@@ -1,0 +1,7 @@
+{
+  "root": "example_root_hash",
+  "leaves": [
+    "example_repo_schema_hash",
+    "example_artifact_hash"
+  ]
+}

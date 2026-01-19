@@ -1,0 +1,6 @@
+{
+  "root": "example_workflow_root",
+  "leaves": [
+    "example_workflow_schema_hash"
+  ]
+}

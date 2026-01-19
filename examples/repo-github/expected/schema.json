@@ -1,0 +1,11 @@
+{
+  "version": "v1",
+  "kind": "repo",
+  "nodes": [
+    {
+      "id": "repo:octocat/Hello-World",
+      "kind": "repo"
+    }
+  ],
+  "edges": []
+}
